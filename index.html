@@ -271,7 +271,7 @@ footer .copy{margin:28px 0 0;color:#8E8EA3}
         <h2>견적 상담</h2>
         <p class="lead">공간 종류와 연락처를 남겨주시면 확인 후 연락드립니다. 바로 통화하셔도 좋아요.</p>
         <a class="tel" href="tel:01054008088">010-5400-8088</a>
-        <p class="small">대표 권용현<br>사업장 주소 · 한글비석로39길 16-2</p>
+        <p class="small">대표 권용현<br>사업장 주소 · 한글비석로39길 16-2<br>이메일 · <a href="mailto:muydesign@naver.com">muydesign@naver.com</a></p>
       </div>
       <form id="inq" class="inq" novalidate>
         <div class="row">
@@ -305,6 +305,7 @@ footer .copy{margin:28px 0 0;color:#8E8EA3}
       <dt>대표자</dt><dd>권용현</dd>
       <dt>사업장 주소</dt><dd>한글비석로39길 16-2</dd>
       <dt>연락처</dt><dd><a href="tel:01054008088">010-5400-8088</a></dd>
+      <dt>이메일</dt><dd><a href="mailto:muydesign@naver.com">muydesign@naver.com</a></dd>
     </dl>
     <p class="copy">© 무영디자인 인테리어. All rights reserved.</p>
   </div>
@@ -318,9 +319,10 @@ footer .copy{margin:28px 0 0;color:#8E8EA3}
 
 <script>
 /* ===== 상담 접수 설정 =====
-   FORM_ENDPOINT에 Formspree 등 폼 수신 주소를 넣으면 신청 내용이 바로 접수됩니다.
-   비워두면 신청 버튼이 문자 앱을 열어 010-5400-8088 로 보낼 내용을 작성해 줍니다(모바일). */
-var FORM_ENDPOINT="";
+   신청 내용은 FormSubmit 서비스를 통해 대표 이메일(muydesign@naver.com)로 전달됩니다.
+   받는 주소를 바꾸려면 아래 TO_EMAIL만 수정하세요. (처음 한 번은 받는 메일함의 확인 메일을 눌러야 합니다.) */
+var TO_EMAIL="muydesign@naver.com";
+var FORM_ENDPOINT="https://formsubmit.co/ajax/"+TO_EMAIL;
 var PHONE="01054008088";
 (function(){
   var tabs=document.querySelectorAll(".tabs button"),items=document.querySelectorAll(".g");
@@ -345,10 +347,11 @@ var PHONE="01054008088";
     });
     if(!ok){show("이름, 연락처, 공사 종류를 입력하고 동의 항목을 체크해 주세요.",true);return}
     var d={};new FormData(f).forEach(function(v,k){d[k]=v});
+    d._subject="[무영디자인 견적 상담] "+d["공사종류"]+" - "+d["이름"];d._template="table";d._captcha="false";
     if(FORM_ENDPOINT){
       show("보내는 중입니다...");
       fetch(FORM_ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(d)})
-        .then(function(r){if(!r.ok)throw 0;f.reset();show("상담 신청이 접수되었습니다. 확인 후 연락드리겠습니다.")})
+        .then(function(r){return r.json().then(function(j){if(!r.ok||j.success==="false"||j.success===false)throw 0;return j})}).then(function(){f.reset();show("상담 신청이 접수되었습니다. 확인 후 연락드리겠습니다.")})
         .catch(function(){show("전송에 실패했습니다. 010-5400-8088로 전화해 주세요.",true)});
     }else{
       var body="[견적 상담]\n"+Object.keys(d).map(function(k){return k+": "+d[k]}).join("\n");
